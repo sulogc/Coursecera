@@ -21,7 +21,16 @@ def format_output(d):
     y2 = d.pop('Y2')
     y2 = np.array(y2)
     return y1, y2
-    
+
+def plot_diff(y_ture, y_pred, title=''):
+    plt.scatter(y_true, y_pred)
+    plt.title(title)
+    plt.xlabel('True Values')
+    plt.ylabel('Predictions')
+    plt.axis('equal')
+    plt.axis('square')
+    plt.xlim(plt.xlim())
+
 
 url = './data/ENB2012_data.xlsx'
 df = pd.read_excel(url)
@@ -40,4 +49,33 @@ test_Y = format_output(test)
 
 norm_train_X = (train - train_stats['mean']) / train_stats['std']
 norm_test_X = (test - train_stats['mean']) / train_stats['std']
-print(df.describe())
+#------------------------------------------------------------------------------------------
+#Build Model
+
+input_layer = Input(shape=(len(train.columns), ))
+f_dense = Dense(units= '128', activation ='relu')(input_layer)
+s_dense = Dense(units= '128', activation ='relu')(f_dense)
+
+y1_output = Dense(units= '1', name='y1_output')(s_dense)
+t_dense = Dense(units= '64', activation ='relu')(s_dense)
+
+y2_output = Dense(units= '1', name='y2_output')(t_dense)
+
+model = Model(inputs= input_layer, outputs = [y1_output, y2_output])
+
+#print(model.summary())
+#----------------------------------------------------------------------------------------
+optimizer = tf.keras.optimizers.SGD(lr=0.001)
+model.compile(optimizer = optimizer,
+                loss = {'y1_output': 'mse', 'y2_output': 'mse'},
+                metrics = { 'y1_output': tf.keras.metrics.RootMeanSquaredError(),
+                            'y2_output': tf.keras.metrics.RootMeanSquaredError()})
+
+history = model.fit(norm_test_X, train_Y,
+                    epochs=500, batch_size = 10, validation_data=(norm_test_X, test_Y))
+
+loss,Y1_loss, Y2_loss, Y1_rmse, Y2_rmse = model.evaluate(x=norm_test_X, y = test_Y)
+print("Loss = {}, Y1_loss = {}, Y2_loss = {}, Y1_rmse = {}, Y2_rmse = {}".format(loss,Y1_loss, Y2_loss, Y1_rmse, Y2_rmse))
+
+Y_pred = model.prediction(norm_test_X0)
+pl
