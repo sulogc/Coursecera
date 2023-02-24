@@ -78,4 +78,3 @@ loss,Y1_loss, Y2_loss, Y1_rmse, Y2_rmse = model.evaluate(x=norm_test_X, y = test
 print("Loss = {}, Y1_loss = {}, Y2_loss = {}, Y1_rmse = {}, Y2_rmse = {}".format(loss,Y1_loss, Y2_loss, Y1_rmse, Y2_rmse))
 
 Y_pred = model.prediction(norm_test_X0)
-pl
